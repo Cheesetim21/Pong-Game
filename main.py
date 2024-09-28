@@ -12,6 +12,7 @@ main_screen.bgcolor("black")
 main_screen.title("Tim's Wacky Pong")
 main_screen.tracer(0)
 
+# Quits Screen
 def exit_program():
     turtle.bye()
 
@@ -24,14 +25,15 @@ enemy_paddle = Paddle()
 enemy_paddle.goto(270, 0)
 enemy_paddle.setheading(90)
 
-# Setup Rest
+# Setup Ball + Scoreboard
 ball = Ball()
 scoreboard = Scoreboard()
+""""""
+# Variables to track which keys are being pressed
+player_key_pressed = {"Up": False, "Down": False}
+enemy_key_pressed = {"w": False, "s": False}
 
-# Variables to track key states
-player_key_pressed = {"W": False, "S": False}
-enemy_key_pressed = {"Up": False, "Down": False}
-
+# Function to handle key press
 def on_key_press(key, player):
     player[key] = True  # Set key state to True when pressed
 
@@ -39,23 +41,23 @@ def on_key_press(key, player):
 def on_key_release(key, player):
     player[key] = False  # Set key state to False when released
 
+main_screen.listen()
+
 # Checks if keys are pressed or released
 # Player controls (left paddle)
-main_screen.onkey(lambda: on_key_press("W", player_key_pressed), "w")  # Bind W key press
-main_screen.onkey(lambda: on_key_release("W", player_key_pressed), "W")  # Bind W key release
-main_screen.onkey(lambda: on_key_press("S", player_key_pressed), "s")  # Bind S key press
-main_screen.onkey(lambda: on_key_release("S", player_key_pressed), "S")  # Bind S key release
+main_screen.onkeypress(lambda: on_key_press("Up", player_key_pressed), "Up")
+main_screen.onkeyrelease(lambda: on_key_release("Up", player_key_pressed), "Up")
+main_screen.onkeypress(lambda: on_key_press("Down", player_key_pressed), "Down")
+main_screen.onkeyrelease(lambda: on_key_release("Down", player_key_pressed), "Down")
 
 # Enemy controls (right paddle)
-main_screen.onkey(lambda: on_key_press("Up", enemy_key_pressed), "Up")  # Bind Up key press
-main_screen.onkey(lambda: on_key_release("Up", enemy_key_pressed), "Up")  # Bind Up key release
-main_screen.onkey(lambda: on_key_press("Down", enemy_key_pressed), "Down")  # Bind Down key press
-main_screen.onkey(lambda: on_key_release("Down", enemy_key_pressed), "Down")  # Bind Down key release
+main_screen.onkeypress(lambda: on_key_press("w", enemy_key_pressed), "w")
+main_screen.onkeyrelease(lambda: on_key_release("w", enemy_key_pressed), "w")
+main_screen.onkeypress(lambda: on_key_press("s", enemy_key_pressed), "s")
+main_screen.onkeyrelease(lambda: on_key_release("s", enemy_key_pressed), "s")
 
 # Checks if player has exited the game
 main_screen.onkeypress(exit_program, "Escape")
-main_screen.listen()
-
 main_screen.onkeypress(ball.reset, "1")
 
 # Number of players and if game is running
@@ -76,6 +78,7 @@ p1_button.write_text("P1")
 p2_button = Button()
 p2_button.write_text("P2")
 
+# Changes the player count on click
 p1_button.onclick(lambda x, y: player_clicked("1", p1_button, p2_button, state))
 p2_button.onclick(lambda x, y: player_clicked("2", p1_button, p2_button, state))
 
@@ -91,24 +94,29 @@ while state['game_playing'] == True:
     player_paddle.paddle_boundary()
     enemy_paddle.paddle_boundary()
 
-    if player_key_pressed["W"]:
+    # Moves the left paddle if the player is holding up or down
+    if player_key_pressed["Up"]:
         player_paddle.up()
-    if player_key_pressed["S"]:
+    if player_key_pressed["Down"]:
         player_paddle.down()
 
-    if enemy_key_pressed["Up"]:
+    # Moves the right paddle if the player is holding s or w
+    if enemy_key_pressed["w"] and state['players'] == "2":
         enemy_paddle.up()
-    if enemy_key_pressed["Down"]:
+    if enemy_key_pressed["s"] and state['players'] == "2":
         enemy_paddle.down()
 
+    # Deflects the ball if it hits the paddle
     if (player_paddle.distance(ball) < 60 and ball.xcor()) < -250 or (enemy_paddle.distance(ball) < 60 and ball.xcor() > 250):
         ball.hit_paddle()
 
+    # Deflects the ball if it hits a top or bottom wall
     if ball.ycor() > 275:
         ball.hit_wall("top")
     elif ball.ycor() < -275:
         ball.hit_wall("bottom")
 
+    # Gives a point and resets the ball if it hits a right or left wall
     if ball.xcor() > 271 or ball.xcor() < -271:
         if ball.xcor() > 285:
             winner = "enemy"
@@ -120,18 +128,27 @@ while state['game_playing'] == True:
         ball.reset(winner)
         t.sleep(0.8)
 
+    # Gives enemy paddle AI if there are 1 players
     if ball.xcor() > 125 and state['players'] == "1":
         enemy_paddle.enemy_tracking(ball)
 
-    if scoreboard.score[0] == 7 or scoreboard.score[1] == 7:
-        if scoreboard.score[0] == 7:
-            scoreboard.game_win()
-        elif scoreboard.score[1] == 7:
-            scoreboard.game_lose()
-        state['game_playing'] = False
-
+    # Increases AI speed if there is a score gap
     if scoreboard.score[0] - scoreboard.score[1] >= 2 and state['players'] == 1:
         enemy_paddle.speed = 10
+
+    # Displays win or lose message accordingly
+    if scoreboard.score[0] == 7:
+        if state['players'] == "1":
+            scoreboard.game_win()
+        else:
+            scoreboard.p_one_win()
+        state['game_playing'] = False
+    elif scoreboard.score[1] == 7:
+        if state['players'] == "1":
+            scoreboard.game_lose()
+        else:
+            scoreboard.p_two_win()
+        state['game_playing'] = False
 
 turtle.done()
 

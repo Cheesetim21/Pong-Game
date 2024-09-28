@@ -30,3 +30,11 @@ class Scoreboard(Turtle):
     def game_lose(self):
         self.goto(0, 0)
         self.write("You Lose", False, "center", ('Courier', 30, 'normal'))
+
+    def p_one_win(self):
+        self.goto(0, 0)
+        self.write("P1 Wins", False, "center", ('Courier', 30, 'normal'))
+
+    def p_two_win(self):
+        self.goto(0, 0)
+        self.write("P2 Wins", False, "center", ('Courier', 30, 'normal'))
