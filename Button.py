@@ -14,10 +14,8 @@ class Button(Turtle):
         if text == "P1":
             self.goto(-100, 0)
         elif text == "P2":
-            self.goto(100, 0 )
+            self.goto(100, 0)
 
-        self.penup()
-        self.goto(self.xcor(), self.ycor() - 20)
         self.write(text, False, "center", ('Courier', 32, 'normal'))
 
 

@@ -1,9 +1,7 @@
 from turtle import Turtle
-import time as t
 
 SPEED = 5
 BOUNDARY = 250
-
 
 class Paddle(Turtle):
 
